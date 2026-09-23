@@ -1,3 +1,25 @@
 # Local-only agent instructions and planning notes
 /AGENTS.md
 /plan.md
+
+# .NET / Visual Studio
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo
+
+# Android / Gradle / Android Studio
+**/.gradle/
+**/build/
+.idea/
+local.properties
+captures/
+*.jks
+*.keystore
+*.apk
+*.aab
+
+# Native build output
+out/
+cmake-build-*/

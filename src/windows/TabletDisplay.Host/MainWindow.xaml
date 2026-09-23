@@ -1,0 +1,14 @@
+<Window
+    x:Class="TabletDisplay.Host.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Tablet Display">
+    <Grid Padding="32">
+        <StackPanel Spacing="12" VerticalAlignment="Center" MaxWidth="560">
+            <TextBlock Text="Tablet Display" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock Text="Foundation shell" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock Text="No tablet is connected. USB transport and virtual display support will be added in later phases."
+                       TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</Window>
