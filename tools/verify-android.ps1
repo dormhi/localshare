@@ -48,6 +48,14 @@ $unexpectedPermissions = @($requestedPermissions | Where-Object { $_ -ne $allowe
 if ($unexpectedPermissions.Count -gt 0) {
     throw "Unexpected Android permissions in the APK: $($unexpectedPermissions -join ', ')"
 }
+if ($requestedPermissions -contains $allowedInternalPermission) {
+    $manifestTree = (& $aapt dump xmltree $apk AndroidManifest.xml | Out-String)
+    if ($LASTEXITCODE -ne 0) { throw "Could not inspect merged manifest permission protection levels." }
+    $signatureOnlyPermission = '(?s)E: permission .*?android:name\([^)]+\)="' + [regex]::Escape($allowedInternalPermission) + '".*?android:protectionLevel\([^)]+\)=\(type 0x11\)0x2'
+    if ($manifestTree -notmatch $signatureOnlyPermission) {
+        throw "The AndroidX self-permission is not signature-protected in the merged APK manifest."
+    }
+}
 
 $hash = (Get-FileHash -Path $apk -Algorithm SHA256).Hash
 Write-Host "PASS: Android debug APK built."

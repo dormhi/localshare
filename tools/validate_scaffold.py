@@ -98,7 +98,7 @@ def main() -> None:
     windows_verification = read("tools/verify-windows.ps1")
     require("dotnet build" in windows_verification and "Start-Process" in windows_verification, "Windows verification must build and launch the shell")
     android_verification = read("tools/verify-android.ps1")
-    require(":app:assembleDebug" in android_verification and "aapt dump permissions" in android_verification, "Android verification must build and inspect APK permissions")
+    require(":app:assembleDebug" in android_verification and "aapt dump permissions" in android_verification and "aapt dump xmltree" in android_verification, "Android verification must build and inspect APK permissions/protection levels")
     require("does not install it on a tablet" in android_verification, "Android verification must not install the APK")
     require("compileSdk = 37" in android_build and "targetSdk = 37" in android_build, "Android compile/target SDK must be 37")
     require("minSdk = 26" in android_build, "Android minSdk baseline must remain 26")
