@@ -8,7 +8,7 @@ This document is the tracked, offline-friendly build and test guide for the publ
 | --- | --- | --- |
 | Windows host UI | C# / WinUI 3, unpackaged framework-dependent shell | .NET 10; Windows App SDK 2.5.1 stable |
 | Windows display driver | C++ / IddCx (UMDF) | Driver project deferred until Windows 11 + Visual Studio + WDK environment is available |
-| Android viewer | Kotlin / Jetpack Compose | AGP 9.4.0; Gradle 9.6.0; JDK 17; Kotlin/Compose compiler plugin 2.4.10; Compose BOM 2026.09.00 |
+| Android viewer | Kotlin / Jetpack Compose | AGP 9.4.1; Gradle 9.7.1; JDK 17 baseline; Kotlin/Compose compiler plugin 2.4.20; Compose BOM 2026.09.00 |
 | Android API range | Tablet viewer | `minSdk 26` provisional; `compileSdk` and `targetSdk` 37 |
 
 The Android package ID `org.example.tabletdisplay` is a scaffold placeholder. Replace it with the owner's chosen permanent application ID before installing a release build or publishing an APK; package ID and signing key determine update identity.
@@ -29,15 +29,17 @@ The display driver is intentionally only documented in `src/windows/driver/READM
 
 ## Android viewer
 
-Install JDK 17, Android SDK Platform 37, Android SDK Build Tools 36.0.0 or newer, and Gradle 9.6.0. Set `ANDROID_HOME` or `ANDROID_SDK_ROOT` to the SDK path. From the repository root:
+Install JDK 17 or newer, Android SDK Platform 37, and Android SDK Build Tools 36.0.0. Set `ANDROID_HOME` or `ANDROID_SDK_ROOT` to the SDK path. The repository wrapper downloads and pins Gradle; do not install a separate Gradle copy. From the repository root:
 
 ```sh
-gradle -p src/android --no-daemon :app:assembleDebug
+./src/android/gradlew --no-daemon -p src/android :app:assembleDebug
 ```
 
-The repository does not yet include a Gradle wrapper because Gradle is not installed in the current authoring environment. A Windows/Android setup phase should generate and validate a Gradle wrapper before it becomes the preferred build command.
+The checked-in Gradle wrapper pins Gradle 9.7.1 and validates the distribution SHA-256 before use. AGP 9.4 requires Gradle 9.6.0 or newer; 9.7.1 is the current stable choice verified on 2026-09-23. Phase 2 lint metadata reported newer stable Android/Kotlin patches, so the project is pinned to AGP 9.4.1 and Kotlin/Compose compiler 2.4.20. The wrapper JAR and distribution hashes are pinned in the repository and checked by `tools/validate_scaffold.py`. The first build needs the Android Gradle/Google Maven artifacts available from network or a populated Gradle cache; coding agents do not need browser access.
 
-The manifest deliberately declares no permissions. The shell does not connect to USB/ADB, the network, or Google Play services. Add only permissions required by an approved implemented feature and cover them in the security review.
+The source manifest deliberately declares no permissions. AndroidX currently adds a package-scoped `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` protected at `signature` level to the merged debug manifest; this is an internal self-permission, not a user-granted or network permission. The Android verification script checks that no other permission requests are present and verifies the self-permission's signature protection in the merged APK. The shell does not connect to USB/ADB, the network, or Google Play services. Backup and Android 12+ device-transfer rules explicitly exclude all app-data domains because this foundation viewer stores no user data. Android 12+ may otherwise allow device-to-device transfer even when `allowBackup=false`: [Android backup behavior](https://developer.android.com/about/versions/12/behavior-changes-12), [Auto Backup rules](https://developer.android.com/identity/data/autobackup). Add only permissions or data retention required by an approved implemented feature and cover them in the security review.
+
+The launcher icon uses the unqualified `mipmap-anydpi` folder because this app's provisional `minSdk` is 26; its adaptive XML includes foreground, background, and monochrome layers.
 
 ## Foundation checks
 
@@ -52,6 +54,17 @@ Before every commit, run the checks relevant to the changed files and a fast sec
 
 At phase completion, run the Windows `dotnet build` on Windows 11 and Android `assembleDebug` with the pinned toolchain when those components change. Report any unavailable device/Windows tests as unavailable; do not mark them passed.
 
+Phase 2 platform checks are automated as follows, from the repository root in Windows PowerShell:
+
+```powershell
+.\tools\verify-windows.ps1 -Architecture x64
+.\tools\verify-android.ps1
+python .\tools\validate_scaffold.py
+git diff --check
+```
+
+Use `-Architecture ARM64` for a Windows on ARM machine. The Windows script restores/builds the host, launches its placeholder window, and waits for it to close; it does not install a driver or change system settings. Install the matching Windows App Runtime 2.5.1 before running if the framework-dependent WinUI app reports that runtime missing. The Android script builds the debug APK, verifies merged permission requests with `aapt`, and reports its SHA-256; it does not install it on a tablet. It requires Android SDK Platform 37 and JDK 17 or newer.
+
 ## Security and distribution notes
 
 - USB/ADB and streaming are not implemented in this foundation shell. When added, explain the Android debugging authorization and revoke/cleanup path; do not enable TCP debugging or expose a listener outside the authorized USB tunnel.
@@ -65,7 +78,17 @@ Versions above were checked on 2026-09-23. Update this table and its compatibili
 - .NET 10 is an LTS release supported through November 2028: [Microsoft .NET releases and support](https://learn.microsoft.com/dotnet/core/releases-and-support).
 - Windows App SDK 2.5.1 is the stable release dated 2026-09-16; WinUI 3 is Microsoft's recommended native framework for new Windows desktop apps: [downloads](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads), [release notes](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/release-notes/windows-app-sdk-2-0), [Windows development path](https://learn.microsoft.com/en-us/windows/apps/get-started/).
 - Unpackaged WinUI apps use the Windows App SDK package and `WindowsPackageType=None` to initialize the framework: [Microsoft unpackaged app sample](https://learn.microsoft.com/en-us/samples/microsoft/windowsappsdk-samples/unpackaged/).
-- AGP 9.4.0 supports API level 37 and requires Gradle 9.6.0, Build Tools 36.0.0, and JDK 17: [AGP 9.4 release notes](https://developer.android.com/build/releases/agp-9-4-0-release-notes), [AGP/Gradle compatibility](https://developer.android.com/build/releases/about-agp).
-- AGP 9 enables built-in Kotlin. This project uses KGP 2.4.10 on the buildscript classpath to match the Compose compiler plugin, and does not apply the now-unneeded `org.jetbrains.kotlin.android` plugin: [built-in Kotlin migration](https://developer.android.com/build/migrate-to-built-in-kotlin), [AGP 9 upgrade notes](https://developer.android.com/build/releases/agp-9-0-0-release-notes).
-- Jetpack Compose's official setup uses Kotlin/Compose compiler plugin 2.4.10 and Compose BOM 2026.09.00: [Compose setup](https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler).
+- AGP 9.4 supports API level 37 and requires Gradle 9.6.0 or newer, Build Tools 36.0.0, and JDK 17: [AGP 9.4 release notes](https://developer.android.com/build/releases/agp-9-4-0-release-notes), [AGP/Gradle compatibility](https://developer.android.com/build/releases/about-agp).
+- Gradle 9.7.1 is the stable distribution used by the wrapper. The wrapper verifies the official binary distribution SHA-256 `acd53f1edaf02f1a8ff99879f8a34b302661a057d9b063ae9e35b552f804d20a`; the official wrapper JAR SHA-256 is `7a9ce74cff467ca1bf60a4fcd9f05185acceda4d0f382434d393e17864262c5d`: [Gradle releases](https://gradle.org/releases/), [checksum reference](https://gradle.org/release-checksums/).
+- AGP 9 enables built-in Kotlin. This project uses KGP 2.4.20 on the buildscript classpath to match the Compose compiler plugin, and does not apply the now-unneeded `org.jetbrains.kotlin.android` plugin: [built-in Kotlin migration](https://developer.android.com/build/migrate-to-built-in-kotlin), [AGP 9 upgrade notes](https://developer.android.com/build/releases/agp-9-0-0-release-notes).
+- Jetpack Compose's official setup uses a Kotlin-matched Compose compiler plugin and the Compose BOM: [Compose setup](https://developer.android.com/develop/ui/compose/setup-compose-dependencies-and-compiler).
 - Android says ADB installs are unaffected by the current developer-verification rollout; check the official [FAQ](https://developer.android.com/developer-verification/guides/faq) again before distribution.
+
+## Phase 2 validation record (2026-09-23)
+
+- PASS: Gradle wrapper launched Gradle 9.7.1 and verified the official wrapper-JAR and distribution SHA-256 values.
+- PASS: Android Gradle configuration, `:app:assembleDebug`, and `:app:lintDebug` on macOS with Java 22.0.1 and Android SDK Platform 37 / Build Tools 36.0.0. AGP 9.4.1 and Kotlin/Compose compiler 2.4.20 are pinned; lint reported zero findings.
+- Final debug APK SHA-256: `f58b502674a4d0f738b9e3762c038005a042a1f1619dba5003a574bc225e9724`.
+- PASS: `aapt dump permissions` found only AndroidX's package-scoped `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, protected at `signature` level. The APK was not installed because no ADB devices are connected and its application ID is a build-only placeholder.
+- PASS: .NET 10 cross-target NuGet restore with `EnableWindowsTargeting=true` on macOS.
+- NOT VALIDATED ON THIS HOST: WinUI `dotnet build` failed at Microsoft's `XamlCompiler.exe`, a Windows executable that cannot run on macOS. This does not establish a Windows build failure. Run `tools/verify-windows.ps1` on Windows 11 before Phase 2 is closed.
