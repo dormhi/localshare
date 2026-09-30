@@ -1,6 +1,6 @@
 # Development setup
 
-This document is the tracked, offline-friendly build and test guide for the public repository. Phase 3 is scoped to an ADB USB handshake and has not passed Windows or physical-device validation. It does not include desktop capture, video, or an IddCx driver.
+This document is the tracked, offline-friendly build and test guide for the public repository. The current phase, test results, pending checks, and agent reading map are in [`docs/project-status.md`](project-status.md). Phase 3 is scoped to an ADB USB handshake and has not passed Windows or physical-device validation. It does not include desktop capture, video, or an IddCx driver.
 
 ## Approved component stack
 
@@ -45,7 +45,7 @@ Once the Phase 3 Windows changes pass Windows validation, the host will require 
 
 `run-as` token provisioning is limited to the debuggable development APK and is not a release credential mechanism. Never enable `adb tcpip` or wireless debugging for this flow. USB debugging gives this computer broad debugging access; revoke it under Developer options → Revoke USB debugging authorizations, then disable USB debugging when desired. ADB private keys, device identifiers, and tokens must not enter the repo or logs.
 
-See [`protocol/README.md`](../protocol/README.md) and ADR-003 for message bytes, timeout behavior, trust boundary, and test expectations. On Windows 11, run `tools/verify-windows.ps1` first to record the deferred Phase 2 baseline, then build/launch the host. Build Android with `:app:assembleDebug :app:lintDebug` and inspect merged APK permissions. Physical testing on each target tablet is required before calling the handshake phase complete.
+See [ADR-003](decisions/ADR-003-phase-3-android-identity-and-usb-handshake.md) and [`protocol/README.md`](../protocol/README.md) for message bytes, timeout behavior, and trust boundary. Follow the ordered [Windows/device checklist](testing/phase-3-windows-checklist.md): run `tools/verify-windows.ps1` first to record the deferred Phase 2 baseline, then perform Phase 3 host/device tests one by one. Build Android with `:app:assembleDebug :app:lintDebug` and inspect merged APK permissions. Physical testing on each target tablet is required before calling the handshake phase complete.
 
 The launcher icon uses the unqualified `mipmap-anydpi` folder because this app's provisional `minSdk` is 26; its adaptive XML includes foreground, background, and monochrome layers.
 
