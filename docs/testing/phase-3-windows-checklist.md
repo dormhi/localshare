@@ -1,5 +1,7 @@
 # Phase 3 Windows and tablet checks
 
+Scheduling update (owner request, 2026-09-30): run these outstanding checks in the [combined Phase 3/4 Windows session](phase-3-4-windows-checklist.md). Phase 3 remains incomplete; starting Phase 4 does not waive any result.
+
 Run these checks on Windows 11 in order, marking each result separately. Use x64 or ARM64 to match the test machine. Do not treat a skipped or unavailable check as a pass. Phase 2's Windows host baseline is still pending and must be recorded first.
 
 ## A. Phase 2 Windows baseline and Phase 3 host build

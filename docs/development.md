@@ -13,6 +13,10 @@ This document is the tracked, offline-friendly build and test guide for the publ
 
 The Android package ID is `com.dormhi.localshare`, selected by the project owner on 2026-09-25. Package ID and signing key determine update identity; changing either after distribution creates a separate install identity.
 
+## Phase 4 preparation
+
+The owner authorized Phase 4 preparation on macOS and deferred the outstanding Phase 3 checks into the [combined Windows validation session](testing/phase-3-4-windows-checklist.md). This is a scheduling change, not a test pass or permission to install a driver. See the [driver design preparation](decisions/phase-4-driver-design.md); the actual WDK project must be created on Windows.
+
 ## Windows host
 
 Build on Windows 11 using Visual Studio 2026 (or a compatible Visual Studio installation with .NET desktop and Windows App SDK tooling) and the .NET 10 SDK:

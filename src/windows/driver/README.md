@@ -1,6 +1,6 @@
-# C++ IddCx driver (reserved)
+# C++ IddCx driver (Phase 4 preparation)
 
-The approved display-driver direction is a separate C++ UMDF indirect display driver using Microsoft's supported IddCx APIs. There is no driver implementation in Phase 1.
+The approved display-driver direction is a separate C++ UMDF indirect display driver using Microsoft's supported IddCx APIs. Phase 4 offline preparation started on 2026-09-30; there is still no driver implementation. See the [design preparation](../../../docs/decisions/phase-4-driver-design.md) and [combined Windows checklist](../../../docs/testing/phase-3-4-windows-checklist.md).
 
 Create the actual WDK project from the current Windows Driver Kit/Visual Studio environment in the Windows driver phase. Do not fabricate project metadata from this placeholder or introduce a kernel-mode display driver. Driver build, signing, installation, and runtime checks require Windows 11 and explicit approval for installation or machine configuration changes.
 

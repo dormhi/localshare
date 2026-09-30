@@ -8,4 +8,6 @@ Store accepted product and technical decisions here. Create one Markdown record 
 - [ADR-002: Buildable foundation](ADR-002-buildable-foundation.md) — Phase 2 toolchain and verification baseline.
 - [ADR-003: Phase 3 Android identity and ADB USB handshake](ADR-003-phase-3-android-identity-and-usb-handshake.md) — selected permanent package ID, abstract socket path, token bootstrap, and Phase 3 trust boundary.
 
+Phase 4 preparation (not an accepted implementation ADR): [driver design](phase-4-driver-design.md) records the approved virtual modes and remaining Windows dependencies.
+
 For current test status and the Windows step sequence, see [project status](../project-status.md) and the [Phase 3 Windows checklist](../testing/phase-3-windows-checklist.md).
