@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "org.example.tabletdisplay"
+    namespace = "com.dormhi.localshare"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "org.example.tabletdisplay"
+        applicationId = "com.dormhi.localshare"
         minSdk = 26
         targetSdk = 37
         versionCode = 1

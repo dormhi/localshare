@@ -55,9 +55,9 @@ def main() -> None:
     android_ns = "{http://schemas.android.com/apk/res/android}"
     permissions = [node.tag for node in manifest if node.tag.endswith("uses-permission")]
     require(not permissions, f"foundation Android manifest must request no permissions: {permissions}")
-    app_id = "org.example.tabletdisplay"
+    app_id = "com.dormhi.localshare"
     android_build = read("src/android/app/build.gradle.kts")
-    require(f'namespace = "{app_id}"' in android_build and f'applicationId = "{app_id}"' in android_build, "temporary Android app ID must match namespace")
+    require(f'namespace = "{app_id}"' in android_build and f'applicationId = "{app_id}"' in android_build, "Android app ID must match namespace")
     require(f'{android_ns}label' in list(manifest.find("application").attrib), "Android app label is required")
     app_attrs = manifest.find("application").attrib
     require(app_attrs.get(f"{android_ns}icon") == "@mipmap/ic_launcher", "Android launcher icon must be declared")
@@ -106,7 +106,7 @@ def main() -> None:
     for relative, needle in (
         ("src/windows/TabletDisplay.Host/App.xaml.cs", "OnLaunched"),
         ("src/windows/TabletDisplay.Host/MainWindow.xaml.cs", "InitializeComponent"),
-        ("src/android/app/src/main/java/org/example/tabletdisplay/MainActivity.kt", "setContent"),
+        ("src/android/app/src/main/java/com/dormhi/localshare/MainActivity.kt", "setContent"),
         ("src/windows/driver/README.md", "C++ UMDF indirect display driver"),
     ):
         require(needle in read(relative), f"expected scaffold marker missing in {relative}")

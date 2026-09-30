@@ -1,6 +1,6 @@
 # Development setup
 
-This document is the tracked, offline-friendly build and test guide for the public repository. It describes the foundation scaffold only; it does not claim that the screen-sharing product is implemented.
+This document is the tracked, offline-friendly build and test guide for the public repository. Phase 3 is scoped to an ADB USB handshake and has not passed Windows or physical-device validation. It does not include desktop capture, video, or an IddCx driver.
 
 ## Approved component stack
 
@@ -11,7 +11,7 @@ This document is the tracked, offline-friendly build and test guide for the publ
 | Android viewer | Kotlin / Jetpack Compose | AGP 9.4.1; Gradle 9.7.1; JDK 17 baseline; Kotlin/Compose compiler plugin 2.4.20; Compose BOM 2026.09.00 |
 | Android API range | Tablet viewer | `minSdk 26` provisional; `compileSdk` and `targetSdk` 37 |
 
-The Android package ID `org.example.tabletdisplay` is a scaffold placeholder. Replace it with the owner's chosen permanent application ID before installing a release build or publishing an APK; package ID and signing key determine update identity.
+The Android package ID is `com.dormhi.localshare`, selected by the project owner on 2026-09-25. Package ID and signing key determine update identity; changing either after distribution creates a separate install identity.
 
 ## Windows host
 
@@ -37,7 +37,15 @@ Install JDK 17 or newer, Android SDK Platform 37, and Android SDK Build Tools 36
 
 The checked-in Gradle wrapper pins Gradle 9.7.1 and validates the distribution SHA-256 before use. AGP 9.4 requires Gradle 9.6.0 or newer; 9.7.1 is the current stable choice verified on 2026-09-23. Phase 2 lint metadata reported newer stable Android/Kotlin patches, so the project is pinned to AGP 9.4.1 and Kotlin/Compose compiler 2.4.20. The wrapper JAR and distribution hashes are pinned in the repository and checked by `tools/validate_scaffold.py`. The first build needs the Android Gradle/Google Maven artifacts available from network or a populated Gradle cache; coding agents do not need browser access.
 
-The source manifest deliberately declares no permissions. AndroidX currently adds a package-scoped `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` protected at `signature` level to the merged debug manifest; this is an internal self-permission, not a user-granted or network permission. The Android verification script checks that no other permission requests are present and verifies the self-permission's signature protection in the merged APK. The shell does not connect to USB/ADB, the network, or Google Play services. Backup and Android 12+ device-transfer rules explicitly exclude all app-data domains because this foundation viewer stores no user data. Android 12+ may otherwise allow device-to-device transfer even when `allowBackup=false`: [Android backup behavior](https://developer.android.com/about/versions/12/behavior-changes-12), [Auto Backup rules](https://developer.android.com/identity/data/autobackup). Add only permissions or data retention required by an approved implemented feature and cover them in the security review.
+The source manifest declares no permissions. Phase 3 uses Android `LocalServerSocket` in the abstract namespace rather than an Android TCP listener; the ADB host endpoint is loopback-only and needs no `INTERNET` permission. AndroidX may add a package-scoped `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` protected at `signature` level to the merged debug manifest; this is internal, not user-granted or network access. The Android verification script rejects other requested permissions. Backup and Android 12+ device-transfer rules exclude all app-data domains: [Android backup behavior](https://developer.android.com/about/versions/12/behavior-changes-12), [Auto Backup rules](https://developer.android.com/identity/data/autobackup).
+
+## Phase 3 ADB handshake prototype
+
+Once the Phase 3 Windows changes pass Windows validation, the host will require Android Platform-Tools (`adb`) on `PATH`. Connect exactly one tablet by USB, unlock the tablet, enable USB debugging in Developer options, and approve the host computer's RSA authorization prompt. Start the host shell and press **Connect tablet**. The host is designed to create an ephemeral loopback ADB forward (`tcp:localhost:0`) to `localabstract:com.dormhi.localshare.session`, provision a random session token through `adb shell run-as` standard input, launch the Android app, then verify a versioned handshake and periodic heartbeat. Disconnect should send a stop control message and remove only that session's forwarding rule. This prototype does not send desktop frames.
+
+`run-as` token provisioning is limited to the debuggable development APK and is not a release credential mechanism. Never enable `adb tcpip` or wireless debugging for this flow. USB debugging gives this computer broad debugging access; revoke it under Developer options → Revoke USB debugging authorizations, then disable USB debugging when desired. ADB private keys, device identifiers, and tokens must not enter the repo or logs.
+
+See [`protocol/README.md`](../protocol/README.md) and ADR-003 for message bytes, timeout behavior, trust boundary, and test expectations. On Windows 11, run `tools/verify-windows.ps1` first to record the deferred Phase 2 baseline, then build/launch the host. Build Android with `:app:assembleDebug :app:lintDebug` and inspect merged APK permissions. Physical testing on each target tablet is required before calling the handshake phase complete.
 
 The launcher icon uses the unqualified `mipmap-anydpi` folder because this app's provisional `minSdk` is 26; its adaptive XML includes foreground, background, and monochrome layers.
 
@@ -67,7 +75,7 @@ Use `-Architecture ARM64` for a Windows on ARM machine. The Windows script resto
 
 ## Security and distribution notes
 
-- USB/ADB and streaming are not implemented in this foundation shell. When added, explain the Android debugging authorization and revoke/cleanup path; do not enable TCP debugging or expose a listener outside the authorized USB tunnel.
+- Phase 3 is limited to the ADB handshake; desktop frames, IddCx, video, touch, release packaging, and production token provisioning remain out of scope.
 - Keep APK signing keys, Windows signing keys/certificates, and device identifiers out of Git.
 - Android developer-verification rules are changing. As of 2026-09-23, Android's official documentation says ADB installs remain unchanged; a phased verification rollout begins 2026-09-30 in Brazil, Indonesia, Singapore, and Thailand for participating stores, with wider rollout planned in 2027. Re-check the official policy before public APK distribution. Sources: [Android developer verification](https://developer.android.com/developer-verification/guides) and [FAQ](https://developer.android.com/developer-verification/guides/faq).
 
