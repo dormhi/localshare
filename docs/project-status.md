@@ -4,6 +4,8 @@ Status checked: 2026-09-30. This page summarizes the current phase, test results
 
 ## Current phase
 
+**Phase 5 activation (owner request, 2026-09-30):** generated-image transport/decoder proof is now active on macOS. The codec/profile/framing decision is pending. Outstanding Windows/tablet checks from Phases 2–4 are combined with Phase 5 in the [new validation index](testing/phase-2-5-windows-checklist.md). Earlier phases remain unverified; no desktop-stream integration is authorized.
+
 **v0.2 Phase 4 — IddCx proof: macOS source draft prepared, Windows validation pending; Phase 3 USB handshake validation remains open.** The owner selected Android application ID `com.dormhi.localshare` and ADB forwarding to Android's abstract `LocalServerSocket` endpoint. No Phase 3 product decisions remain open.
 
 The Android identity and endpoint are in local commit `dfe35be` (`feat(android): add ADB handshake endpoint`). The Windows ADB lifecycle adapter and host UI changes are currently in the maintainer's working tree and are not committed. The end-to-end USB handshake has not been validated on Windows or on either tablet.

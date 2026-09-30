@@ -1,5 +1,7 @@
 # Combined Phase 3 and Phase 4 Windows validation
 
+Latest scheduling update: Phase 5 is now active; use the [Phases 2–5 validation index](phase-2-5-windows-checklist.md). The Phase 3/4 steps below remain required.
+
 ## Owner-approved scheduling change — 2026-09-30
 
 The owner deferred the outstanding Phase 3 Windows/tablet checks into the Phase 4 Windows test session and authorized starting Phase 4 from the macOS checkout. This combines scheduling only: Phase 2, Phase 3 and Phase 4 retain separate acceptance results. No deferred check is a pass. Phase 4 now has macOS-tested portable logic and Windows source drafts; see [the report](phase-4-macos-report.md). The actual WDK project must be created and validated on Windows. No driver build, signing, installation or runtime result exists yet.
