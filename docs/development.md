@@ -13,9 +13,9 @@ This document is the tracked, offline-friendly build and test guide for the publ
 
 The Android package ID is `com.dormhi.localshare`, selected by the project owner on 2026-09-25. Package ID and signing key determine update identity; changing either after distribution creates a separate install identity.
 
-## Phase 4 preparation
+## Phase 4 macOS source draft
 
-The owner authorized Phase 4 preparation on macOS and deferred the outstanding Phase 3 checks into the [combined Windows validation session](testing/phase-3-4-windows-checklist.md). This is a scheduling change, not a test pass or permission to install a driver. See the [driver design preparation](decisions/phase-4-driver-design.md); the actual WDK project must be created on Windows.
+The owner authorized all macOS-feasible Phase 4 implementation and deferred the outstanding Phase 3 checks into the [combined Windows validation session](testing/phase-3-4-windows-checklist.md). The working tree now includes driver source drafts and portable C++/C# tests; this is not a Windows test pass or permission to install a driver. See the [driver design preparation](decisions/phase-4-driver-design.md); the actual WDK project must be created on Windows. Run `python3 tools/test-driver-core.py --sanitize` and `dotnet run --project tests/HostDriverControl/HostDriverControl.csproj` for the new offline tests. See the [implementation report](testing/phase-4-macos-report.md) and [WDK handoff](../src/windows/driver/WDK-HANDOFF.md).
 
 ## Windows host
 

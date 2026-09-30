@@ -30,7 +30,7 @@ This builds the debug APK and checks that no permission beyond AndroidX's packag
 
 **Status:** NOT RUN
 
-With Android Platform-Tools available on `PATH`, open the host app and click **Connect tablet** first with no ADB device, then with one USB-connected device whose host authorization has not been approved. Verify the UI reports a useful missing-device/authorization message, does not create a persistent forward, and remains usable. Record outcomes without saving the tablet serial or ADB key.
+Leave the virtual-display option off for Phase 3-only tests. With Android Platform-Tools available on `PATH`, open the host app and click **Connect tablet** first with no ADB device, then with one USB-connected device whose host authorization has not been approved. Verify the UI reports a useful missing-device/authorization message, does not create a persistent forward, and remains usable. Record outcomes without saving the tablet serial or ADB key.
 
 ## D. Test one tablet per session
 

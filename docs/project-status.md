@@ -4,11 +4,11 @@ Status checked: 2026-09-30. This page summarizes the current phase, test results
 
 ## Current phase
 
-**v0.2 Phase 4 — IddCx proof: offline preparation active; Phase 3 USB handshake validation remains open.** The owner selected Android application ID `com.dormhi.localshare` and ADB forwarding to Android's abstract `LocalServerSocket` endpoint. No Phase 3 product decisions remain open.
+**v0.2 Phase 4 — IddCx proof: macOS source draft prepared, Windows validation pending; Phase 3 USB handshake validation remains open.** The owner selected Android application ID `com.dormhi.localshare` and ADB forwarding to Android's abstract `LocalServerSocket` endpoint. No Phase 3 product decisions remain open.
 
 The Android identity and endpoint are in local commit `dfe35be` (`feat(android): add ADB handshake endpoint`). The Windows ADB lifecycle adapter and host UI changes are currently in the maintainer's working tree and are not committed. The end-to-end USB handshake has not been validated on Windows or on either tablet.
 
-Phase 2's Windows baseline remains **NOT RUN by owner choice**. Keep it pending; do not report it as passed. Phase 4 preparation started by owner request on 2026-09-30; its actual WDK project and all driver validation still require Windows.
+Phase 2's Windows baseline remains **NOT RUN by owner choice**. Keep it pending; do not report it as passed. Phase 4 source drafting and portable testing were authorized by owner clarification on 2026-09-30. C++ core, UMDF/IddCx source drafts and a C# control/lease path now exist in the working tree; the actual WDK project and driver validation require Windows. See the [macOS report](testing/phase-4-macos-report.md) for exact coverage.
 
 ## Validation results
 
@@ -37,7 +37,7 @@ Run the steps in [the Phase 3 Windows and tablet checklist](testing/phase-3-wind
 4. Check heartbeat, disconnect, reconnect, cable pull, and removal of only the session's ADB forward.
 5. Record each result in the checklist. Keep device serials, tokens, ADB keys, and screen content out of the repository/logs.
 
-On 2026-09-30 the owner authorized Phase 4 to start before these checks, and combined the outstanding Phase 3 and Phase 4 Windows validation into one later session. Follow the [combined checklist](testing/phase-3-4-windows-checklist.md). Phase 3 remains incomplete; Phase 4 is at offline design/preparation only. See the [driver design preparation](decisions/phase-4-driver-design.md).
+On 2026-09-30 the owner authorized Phase 4 to start before these checks, and combined the outstanding Phase 3 and Phase 4 Windows validation into one later session. Follow the [combined checklist](testing/phase-3-4-windows-checklist.md). Phase 3 remains incomplete; Phase 4 has portable-tested logic and uncompiled Windows driver source drafts. See [ADR-004](decisions/ADR-004-phase-4-usb-owned-display.md) and the [WDK handoff](../src/windows/driver/WDK-HANDOFF.md).
 
 ## Read these documents before making changes
 
