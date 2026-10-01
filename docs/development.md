@@ -7,7 +7,7 @@ This document is the tracked, offline-friendly build and test guide for the publ
 | Component | Foundation choice | Current pinned version |
 | --- | --- | --- |
 | Windows host UI | C# / WinUI 3, unpackaged framework-dependent shell | .NET 10; Windows App SDK 2.5.1 stable |
-| Windows display driver | C++ / IddCx (UMDF) | Driver project deferred until Windows 11 + Visual Studio + WDK environment is available |
+| Windows display driver | C++ / IddCx (UMDF) | Windows template-generated project; SDK/WDK 28000 build and runtime validation pending |
 | Android viewer | Kotlin / Jetpack Compose | AGP 9.4.1; Gradle 9.7.1; JDK 17 baseline; Kotlin/Compose compiler plugin 2.4.20; Compose BOM 2026.09.00 |
 | Android API range | Tablet viewer | `minSdk 26` provisional; `compileSdk` and `targetSdk` 37 |
 
@@ -19,6 +19,8 @@ The owner authorized all macOS-feasible Phase 4 implementation and deferred the 
 
 ## Windows host
 
+Windows checkpoint (2026-10-01): x64 build/launch/normal close and ARM64 cross-build passed. See the [Windows report](testing/phase-2-5-windows-report.md) for exact coverage. Restore with `-p:Platform=x64` or `-p:Platform=ARM64` to produce matching apphost assets. The driver project is now generated from the installed Windows UMDF template; its unsigned build script is `tools/build-driver.ps1 -Architecture x64 -Analyze` (repeat with ARM64). SDK/WDK installation, native compilation, INF validation and explicitly approved runtime tests are still pending. No driver installation is performed by this script.
+
 Build on Windows 11 using Visual Studio 2026 (or a compatible Visual Studio installation with .NET desktop and Windows App SDK tooling) and the .NET 10 SDK:
 
 ```powershell
@@ -29,7 +31,7 @@ dotnet build .\src\windows\TabletDisplay.Host\TabletDisplay.Host.csproj -c Debug
 
 The shell is an unpackaged WinUI 3 app (`WindowsPackageType=None`) that references the Windows App SDK NuGet package. Run/build validation must happen on Windows. The current Mac checkout cannot validate WinUI runtime, Windows packaging, IddCx, or driver installation.
 
-The display driver is intentionally only documented in `src/windows/driver/README.md`. Do not manufacture a WDK project or install/sign a driver from the Mac environment. Create the actual C++/IddCx UMDF project in a Windows phase with a supported WDK and validate it on the agreed Windows 11 test machine.
+The driver source and Windows template-generated project are in `src/windows/driver`. The source remains a proof draft pending actual WDK compilation and approved runtime validation. Follow its handoff document; a prepared project does not authorize installation or signing.
 
 ## Android viewer
 

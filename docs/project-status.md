@@ -1,16 +1,16 @@
 # Project status and agent reading map
 
-Status checked: 2026-09-30. This page summarizes the current phase, test results, outstanding work, and the Markdown files an agent should read before changing the project.
+Status checked: 2026-10-01. See the [Windows checkpoint report](testing/phase-2-5-windows-report.md) for commands, tool versions, coverage and outstanding gates.
 
 ## Current phase
 
-**Phase 5 activation (owner request, 2026-09-30):** generated-image transport/decoder proof is now active on macOS. The codec/profile/framing decision is pending. Outstanding Windows/tablet checks from Phases 2–4 are combined with Phase 5 in the [new validation index](testing/phase-2-5-windows-checklist.md). Earlier phases remain unverified; no desktop-stream integration is authorized.
+**Phase 5 activation (owner request, 2026-09-30):** generated-image transport/decoder proof is active. OS H.264 and a bounded, authenticated secondary ADB channel are approved; 30 FPS is a default, with other rates subject to measured encoder/decoder support. Windows development now covers outstanding checks from Phases 2–5 in the [validation index](testing/phase-2-5-windows-checklist.md). No desktop-stream integration is authorized.
 
 **v0.2 Phase 4 — IddCx proof: macOS source draft prepared, Windows validation pending; Phase 3 USB handshake validation remains open.** The owner selected Android application ID `com.dormhi.localshare` and ADB forwarding to Android's abstract `LocalServerSocket` endpoint. No Phase 3 product decisions remain open.
 
 The Android identity and endpoint are in local commit `dfe35be` (`feat(android): add ADB handshake endpoint`). The Windows ADB lifecycle adapter and host UI changes are currently in the maintainer's working tree and are not committed. The end-to-end USB handshake has not been validated on Windows or on either tablet.
 
-Phase 2's Windows baseline remains **NOT RUN by owner choice**. Keep it pending; do not report it as passed. Phase 4 source drafting and portable testing were authorized by owner clarification on 2026-09-30. C++ core, UMDF/IddCx source drafts and a C# control/lease path now exist in the working tree; the actual WDK project and driver validation require Windows. See the [macOS report](testing/phase-4-macos-report.md) for exact coverage.
+Phase 2's Windows x64 host baseline **PASSed on 2026-10-01**: restore/build, visible window and normal close. ARM64 cross-build passed; native ARM64 execution remains unavailable. Phase 3 no-device UI and synthetic adapter tests passed; physical USB acceptance remains open. Phase 4 now has a Windows template-generated project, but SDK/WDK builds and driver runtime validation remain pending. See the [Windows report](testing/phase-2-5-windows-report.md) and earlier [macOS report](testing/phase-4-macos-report.md) for exact coverage.
 
 ## Validation results
 
@@ -23,8 +23,8 @@ Phase 2's Windows baseline remains **NOT RUN by owner choice**. Keep it pending;
 | Full offline contract suites | PASS, 8/8 | `python3 -m unittest discover -s tests -p 'test_*.py'` |
 | Scaffold/security validator and whitespace | PASS | `python3 tools/validate_scaffold.py`; `git diff --check` |
 | Isolated ADB lifecycle C# class compilation | PASS, 0 warnings/errors | .NET 10 compile only; does not compile the WinUI app |
-| Phase 2 Windows host baseline | NOT RUN | Deferred to the owner's Windows session |
-| Phase 3 Windows host build and launch | NOT RUN | Run from the Windows checklist below |
+| Phase 2 Windows host baseline | PASS x64, 2026-10-01 | Build/launch/normal close; ARM64 cross-build only |
+| Phase 3 Windows host build and launch | PASS x64, 2026-10-01 | Missing-ADB and zero-device UI observed; synthetic adapter scenarios pass |
 | Physical USB/ADB tests | NOT RUN | Neither Samsung Tab A11 nor Huawei MatePad 11 was tested |
 
 No driver was installed and no boot/security setting was changed.
@@ -33,7 +33,7 @@ No driver was installed and no boot/security setting was changed.
 
 Run the steps in [the Phase 3 Windows and tablet checklist](testing/phase-3-windows-checklist.md) one at a time after switching to Windows 11:
 
-1. Run `tools/verify-windows.ps1` first to record the deferred Phase 2 baseline and verify the current host build/launch.
+1. The x64 host baseline passed on 2026-10-01. Rerun `tools/verify-windows.ps1` after relevant host changes.
 2. Exercise the host's no-device and unauthorized-device states.
 3. Test an authorized ADB handshake with Samsung Tab A11, then Huawei MatePad 11, in separate sessions.
 4. Check heartbeat, disconnect, reconnect, cable pull, and removal of only the session's ADB forward.
