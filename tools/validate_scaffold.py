@@ -116,9 +116,14 @@ def main() -> None:
         re.compile(r"AKIA[0-9A-Z]{16}"),
         re.compile(r"(?i)(?:api[_-]?key|client[_-]?secret|password)\s*[:=]\s*['\"]?[^\s'\"]{8,}"),
     )
+    # Dependencies, quarantined transfer metadata and generated compiler output
+    # are not project source. Scan every other source/document, including new files.
+    generated_directories = {".git", ".cache", ".gradle", ".kotlin", "bin", "obj", "build", "out", "__pycache__"}
     candidate_files = [
         path for path in ROOT.rglob("*")
-        if path.is_file() and ".git" not in path.parts and path.suffix.lower() not in {".png", ".jpg", ".jar", ".apk"}
+        if path.is_file() and not generated_directories.intersection(path.relative_to(ROOT).parts)
+        and not path.name.startswith("._")
+        and path.suffix.lower() not in {".png", ".jpg", ".jar", ".apk"}
     ]
     for path in candidate_files:
         try:

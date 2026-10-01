@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- AppleDouble files can reappear when transferring a checkout from macOS. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/._*</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

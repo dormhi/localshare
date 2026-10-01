@@ -24,7 +24,7 @@ if ($LASTEXITCODE -ne 0 -or $dotnetVersion -notmatch '^10\.') {
 }
 
 Write-Host "Restoring WinUI host with .NET SDK $dotnetVersion..."
-& dotnet restore $projectFile
+& dotnet restore $projectFile -p:Platform=$Architecture
 if ($LASTEXITCODE -ne 0) { throw "dotnet restore failed with exit code $LASTEXITCODE." }
 
 Write-Host "Building $Architecture configuration..."

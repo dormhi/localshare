@@ -2,6 +2,12 @@
 /AGENTS.md
 /plan.md
 
+# Local toolchain/download caches and macOS transfer metadata
+/.cache/
+.DS_Store
+._*
+**/.kotlin/
+
 # .NET / Visual Studio
 **/bin/
 **/obj/
