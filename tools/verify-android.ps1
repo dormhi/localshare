@@ -7,16 +7,22 @@ $androidRoot = Join-Path $repositoryRoot "src\android"
 $gradleWrapper = Join-Path $androidRoot "gradlew.bat"
 
 $java = Get-Command java -ErrorAction Stop
-$javaVersionOutput = (& $java.Source -version 2>&1 | Out-String)
+# Windows PowerShell 5.1 turns native stderr into terminating errors under "Stop"; java -version writes to stderr.
+$ErrorActionPreference = "Continue"
+$javaVersionOutput = (& $java.Source -version 2>&1 | ForEach-Object { "$_" } | Out-String)
+$javaExitCode = $LASTEXITCODE
+$ErrorActionPreference = "Stop"
 $javaVersionMatch = [regex]::Match($javaVersionOutput, 'version "(?:1\.)?(\d+)')
-if ($LASTEXITCODE -ne 0 -or -not $javaVersionMatch.Success -or [int]$javaVersionMatch.Groups[1].Value -lt 17) {
+if ($javaExitCode -ne 0 -or -not $javaVersionMatch.Success -or [int]$javaVersionMatch.Groups[1].Value -lt 17) {
     throw "JDK 17 or newer is required to run Gradle. Detected: $javaVersionOutput"
 }
 
 $androidSdk = $env:ANDROID_HOME
 if (-not $androidSdk) { $androidSdk = $env:ANDROID_SDK_ROOT }
 if (-not $androidSdk -and $env:LOCALAPPDATA) { $androidSdk = Join-Path $env:LOCALAPPDATA "Android\Sdk" }
-if (-not $androidSdk -or -not (Test-Path (Join-Path $androidSdk "platforms\android-37\android.jar"))) {
+# Newer SDK managers install API 37 as "android-37.0"; older ones use "android-37".
+if (-not $androidSdk -or -not ((Test-Path (Join-Path $androidSdk "platforms\android-37\android.jar")) -or
+        (Test-Path (Join-Path $androidSdk "platforms\android-37.0\android.jar")))) {
     throw "Android SDK Platform 37 is required. Install it with Android Studio SDK Manager and set ANDROID_HOME or ANDROID_SDK_ROOT."
 }
 
