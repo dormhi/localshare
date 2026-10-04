@@ -28,3 +28,13 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
+
+
+// SDK-only executable protocol tests: no test-framework dependency or device.
+tasks.register<JavaExec>("videoProtocolTest") {
+    dependsOn("compileDebugUnitTestKotlin")
+    classpath = files(provider { tasks.named("compileDebugUnitTestKotlin").get().outputs.files },
+        provider { tasks.named("compileDebugKotlin").get().outputs.files },
+        provider { configurations.getByName("debugUnitTestRuntimeClasspath") })
+    mainClass.set("com.dormhi.localshare.VideoProtocolTestKt")
+}

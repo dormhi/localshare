@@ -10,6 +10,8 @@ Store accepted product and technical decisions here. Create one Markdown record 
 
 - [ADR-004: USB-owned display](ADR-004-phase-4-usb-owned-display.md) — accepted Phase 4 lifecycle and macOS work scope; Windows validation pending.
 
+- [ADR-005: Bounded video and selectable FPS](ADR-005-bounded-video-and-fps.md) — generated-pattern proof, OS codecs and low/high FPS limits.
+
 Phase 4 working notes: [driver design](phase-4-driver-design.md) records the approved virtual modes and remaining Windows dependencies.
 
 For current test status and the Windows step sequence, see [project status](../project-status.md) and the [Phase 3 Windows checklist](../testing/phase-3-windows-checklist.md).

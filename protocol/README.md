@@ -1,5 +1,7 @@
 # Phase 3 USB handshake protocol
 
+Phase 5 adds a separately authenticated [generated-video channel](VIDEO.md); the control channel below remains unchanged.
+
 Phase 3 carries control bytes only. It does not send desktop frames or user content.
 
 ## Transport and trust boundary
