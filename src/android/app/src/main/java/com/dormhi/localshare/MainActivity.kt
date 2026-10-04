@@ -3,6 +3,13 @@ package com.dormhi.localshare
 import android.net.LocalServerSocket
 import android.net.LocalSocket
 import android.os.Bundle
+import android.view.Surface as VideoSurface
+import android.view.SurfaceView
+import android.view.SurfaceHolder
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +41,9 @@ class MainActivity : ComponentActivity() {
     @Volatile private var activeClient: LocalSocket? = null
     @Volatile private var endpointThread: Thread? = null
     @Volatile private var endpointStop = AtomicBoolean(true)
+    @Volatile private var videoReceiver: VideoReceiver? = null
+    @Volatile private var videoSurface: VideoSurface? = null
+    @Volatile private var reportedPanelRates = intArrayOf(0, 0)
     private var status by mutableStateOf("Waiting for the Windows host")
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +58,30 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Text("Tablet Display", style = MaterialTheme.typography.headlineMedium)
                         Text(status, modifier = Modifier.padding(top = 12.dp))
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                            val aspect = VideoProtocol.WIDTH.toFloat() / VideoProtocol.HEIGHT
+                            val fittedWidth = minOf(maxWidth, maxHeight * aspect)
+                            AndroidView(modifier = Modifier.size(fittedWidth, fittedWidth / aspect), factory = { context ->
+                                SurfaceView(context).apply {
+                                    holder.addCallback(object : SurfaceHolder.Callback {
+                                        override fun surfaceCreated(holder: SurfaceHolder) { videoSurface = holder.surface }
+                                        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                                            videoSurface = holder.surface
+                                            val current = display
+                                            reportedPanelRates = intArrayOf(
+                                                ((current?.refreshRate ?: 0f) * 1000).toInt(),
+                                                ((current?.supportedModes?.maxOfOrNull { it.refreshRate } ?: 0f) * 1000).toInt(),
+                                            )
+                                        }
+                                        override fun surfaceDestroyed(holder: SurfaceHolder) {
+                                            videoSurface = null
+                                            videoReceiver?.close()
+                                            status = "Display surface changed; reconnect from Windows"
+                                        }
+                                    })
+                                }
+                            })
+                        }
                         Text(
                             "Connect by USB and authorize this computer in the Android USB debugging prompt.",
                             modifier = Modifier.padding(top = 12.dp),
@@ -135,7 +169,14 @@ class MainActivity : ComponentActivity() {
                         client.soTimeout = 5_000
                         if (performHandshake(client, expectedToken)) {
                             runOnUiThread { if (endpointStop === stop && !stop.get()) status = "Connected to Windows host" }
-                            // Phase 3 proves the authorized tunnel only; no image data is sent.
+                            val video = VideoReceiver(expectedToken.copyOf(), { videoSurface }, { reportedPanelRates }) { message ->
+                                runOnUiThread { if (endpointStop === stop && !stop.get()) status = message }
+                            }
+                            synchronized(this) {
+                                if (endpointStop === stop && !stop.get()) { videoReceiver = video; video.start() }
+                                else video.close()
+                            }
+                            // Video has its own authenticated bounded channel; control stays responsive.
                             var stopRequested = false
                             while (!stop.get()) {
                                 try {
@@ -149,7 +190,8 @@ class MainActivity : ComponentActivity() {
                                     client.outputStream.write(PONG_MESSAGE)
                                     client.outputStream.flush()
                                 } catch (_: SocketTimeoutException) {
-                                    // Recheck lifecycle and peer status every five seconds.
+                                    // A stalled control session must also release the video decoder.
+                                    break
                                 } catch (_: IOException) {
                                     break
                                 }
@@ -162,6 +204,7 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) {
                         // Reject malformed, incomplete, or idle clients without exposing data.
                     } finally {
+                        synchronized(this) { videoReceiver?.close(); videoReceiver = null }
                         runCatching { client.close() }
                         synchronized(this) {
                             if (activeClient === client) activeClient = null
@@ -197,6 +240,8 @@ class MainActivity : ComponentActivity() {
     private fun stopEndpoint() {
         val resources = synchronized(this) {
             endpointStop.set(true)
+            videoReceiver?.close()
+            videoReceiver = null
             val current = Triple(activeClient, server, endpointThread)
             activeClient = null
             server = null
@@ -216,7 +261,13 @@ class MainActivity : ComponentActivity() {
 
     private fun consumeSessionToken(): ByteArray? {
         val file = java.io.File(filesDir, "session_token")
-        val value = runCatching { file.readText().trim() }.getOrNull() ?: return null
+        if (file.length() != 64L) { runCatching { file.delete() }; return null }
+        val value = runCatching { file.inputStream().use { input ->
+            val bytes = ByteArray(64)
+            input.readFully(bytes)
+            if (input.read() != -1) throw IOException("token size")
+            bytes.toString(Charsets.US_ASCII)
+        } }.getOrNull() ?: return null
         runCatching { file.delete() }
         return decodeToken(value)
     }
