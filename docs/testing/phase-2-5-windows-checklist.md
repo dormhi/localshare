@@ -16,15 +16,15 @@ Owner scheduling decision: 2026-09-30. Phase 5 is active on macOS; unavailable W
 | Phase / check | Status | Evidence |
 | --- | --- | --- |
 | 2: Windows host baseline | PASS x64, 2026-10-01 | Visible build/launch/close; ARM64 cross-build only; [report](phase-2-5-windows-report.md) |
-| 3: host no-device / unauthorized state | PARTIAL | Real zero-device UI PASS; synthetic unauthorized PASS; physical unauthorized pending |
-| 3: Samsung USB handshake/lifecycle | NOT RUN | Deferred |
+| 3: host no-device / unauthorized state | PASS | Real zero-device UI and physical unauthorized Samsung (2026-10-15) |
+| 3: Samsung USB handshake/lifecycle | PASS, 2026-10-15 | SM-X130 Android 16; see [Phase 3 checklist](phase-3-windows-checklist.md) findings |
 | 3: Huawei USB handshake/lifecycle | NOT RUN | Deferred |
-| 3: malformed handshake / heartbeat / exact cleanup | PARTIAL | Synthetic actual-adapter tests PASS; physical USB pending |
+| 3: malformed handshake / heartbeat / exact cleanup | PASS (Samsung) | Synthetic adapter tests plus physical heartbeat, cable pull and exact cleanup; Huawei pending |
 | 4: WDK x64 build/static analysis | NOT RUN | Template-generated project prepared; signed kit installation pending |
 | 4: WDK ARM64 build/static analysis | NOT RUN | Template-generated project prepared; signed kit installation pending |
 | 4: access policy / signing / install / rollback | NOT RUN | Windows environment and explicit action approvals required |
 | 4: modes / extended desktop / stop / reboot / USB-owned cleanup | NOT RUN | Deferred |
-| 5: Windows encoder build and generated-pattern output | NOT RUN | Windows required |
+| 5: Windows encoder build and generated-pattern output | PASS x64, 2026-10-15 | Hardware-first helper (NVENC on RTX 2060) and software fallback, 1–144 FPS conformance; commit 57e1e97 |
 | 5: Samsung decoder capabilities and rendered pattern | NOT RUN | Physical tablet required |
 | 5: Huawei Android runtime, decoder capabilities and rendered pattern | NOT RUN | Physical tablet required |
 | 5: unsupported format and malformed stream rejection | NOT RUN | Runtime tests pending |

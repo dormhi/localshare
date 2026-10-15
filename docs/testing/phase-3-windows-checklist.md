@@ -28,13 +28,13 @@ This builds the debug APK and checks that no permission beyond AndroidX's packag
 
 ## C. No-device and unauthorized-device UI
 
-**Status:** NOT RUN
+**Status:** PASS (Samsung SM-X130, 2026-10-15)
 
 Leave the virtual-display option off for Phase 3-only tests. With Android Platform-Tools available on `PATH`, open the host app and click **Connect tablet** first with no ADB device, then with one USB-connected device whose host authorization has not been approved. Verify the UI reports a useful missing-device/authorization message, does not create a persistent forward, and remains usable. Record outcomes without saving the tablet serial or ADB key.
 
 ## D. Test one tablet per session
 
-**Status: Samsung Tab A11 NOT RUN; Huawei MatePad 11 NOT RUN.**
+**Status: Samsung Tab A11 PASS (2026-10-15, after the fixes below); Huawei MatePad 11 NOT RUN.**
 
 For each tablet separately:
 
@@ -51,9 +51,21 @@ Record each device's model/OS and each result. Do not capture or log screen cont
 
 | Check | Result (PASS/FAIL/NOT RUN) | Machine/device and build | Notes |
 | --- | --- | --- | --- |
-| A. Phase 2 baseline + Phase 3 host build | NOT RUN | | |
-| B. Android APK and permission review | PASS on macOS; confirm source matches | | |
-| C. No-device and unauthorized UI | NOT RUN | | |
-| D. Samsung Tab A11 | NOT RUN | | |
-| D. Huawei MatePad 11 | NOT RUN | | |
-| D. Reconnect, cable pull, and forwarding cleanup | NOT RUN | | |
+| A. Phase 2 baseline + Phase 3 host build | PASS x64 | Windows 11 Home 25H2 x64 (26200), .NET 10, Windows App SDK 2.5.1 | 0 warnings/errors; see the [Windows report](phase-2-5-windows-report.md) |
+| B. Android APK and permission review | PASS | Same host, Gradle 9.7.1, SDK 37 | `assembleDebug`, `lintDebug` (0 errors; 2 "newer version available" notices), `videoProtocolTest`; installed package grants no runtime/user permissions |
+| C. No-device and unauthorized UI | PASS | Samsung SM-X130 | Real unauthorized device: "authorize USB debugging" message, no forward created, Connect works after approval |
+| D. Samsung Tab A11 | PASS | SM-X130, Android 16 / SDK 36, Platform-Tools 37.0.1 | Handshake, heartbeats, Disconnect, three Connect/Disconnect cycles with a single live forward |
+| D. Huawei MatePad 11 | NOT RUN | | Separate session required |
+| D. Reconnect, cable pull, and forwarding cleanup | PASS (Samsung) | SM-X130 | Cable pull: tablet "Disconnected", host clear message, forward and port removed; replug + fresh session; closing the host window leaves no process, forward, tablet socket or token file |
+
+### Samsung session findings — 2026-10-15
+
+The first physical run found defects the synthetic harness had masked because the fake `adb` accepted what real `adb` rejects. All were fixed and retested on the device before the PASS rows above:
+
+1. Platform-Tools 37.0.1 rejects `adb forward tcp:localhost:0` (and `tcp:127.0.0.1:0`) with "Invalid source port". The host now uses `tcp:0` and verifies from the OS listener table that the port is bound to loopback only; an ADB server started with `-a` is refused before any token is sent.
+2. `adb shell` joins arguments with spaces for the device shell, so `sh -c cat > files/session_token` redirected in the outer shell and failed. The command is now passed quoted.
+3. Reconnecting after a session could reach the previous endpoint (old token) or a not-yet-listening endpoint; adb then closes the connection (end of stream). Tokens are now single-use on Android (the endpoint closes when its session ends) and the host retries the handshake on a fresh connection for up to 15 seconds.
+4. `LocalServerSocket.close()` does not wake a thread blocked in `accept()`, so the video listener stayed bound after a session and the next session reported "Video endpoint unavailable". Android now wakes the blocked accept after closing.
+5. Host disconnect messages showed raw socket errors (for example Windows error 10053); they now explain the disconnect and what to do.
+
+Environment notes for users and later phases: SuperDisplay's `MirrorService` runs its own ADB server (version 40) and repeatedly replaced ours (version 41), dropping the device; the test stopped that service temporarily. A faulty cable produced "no device" with no ADB interface. Both need clear in-app guidance (Phase 8 compatibility work).
