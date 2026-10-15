@@ -120,7 +120,7 @@ public sealed partial class MainWindow : Window
         OperationCanceledException => "the tablet stopped answering (no heartbeat). Check that the tablet is awake and the cable is connected, then connect again.",
         // Only transport failures; the video session also uses IOException for its own diagnostics.
         System.Net.Sockets.SocketException or EndOfStreamException or IOException { InnerException: System.Net.Sockets.SocketException } =>
-            "the tablet was disconnected (USB cable removed, tablet locked, or USB debugging turned off). Reconnect it and select Connect tablet.",
+            "the tablet was disconnected (USB cable removed, the tablet app was closed or restarted, the tablet was locked, or USB debugging was turned off). Reconnect it and select Connect tablet.",
         _ => ex.Message,
     };
 

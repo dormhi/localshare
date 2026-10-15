@@ -147,8 +147,11 @@ internal sealed class AdbSession : IAsyncDisposable
     internal async Task<VideoTunnel> OpenVideoTunnelAsync(CancellationToken token)
     {
         var port = await ForwardLoopbackAsync(_serial, "localabstract:com.dormhi.localshare.video", token);
+        // Best effort, like the control forward: when the cable is pulled adb has already dropped the
+        // device's forwards, so this removal fails and must not be reported as a cleanup failure.
         async Task Cleanup() {
-            await RunAdbAsync(["-s", _serial, "forward", "--remove", $"tcp:{port}"], CancellationToken.None);
+            try { await RunAdbAsync(["-s", _serial, "forward", "--remove", $"tcp:{port}"], CancellationToken.None); }
+            catch (InvalidOperationException) { }
         }
         TcpClient? client = null;
         try
