@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/windows/TabletDisplay.Host/AdbSession.cs" Link="AdbSession.cs" />
+    <Compile Include="../../src/windows/TabletDisplay.Host/VideoSession.cs" Link="VideoSession.cs" />
+    <Compile Include="../../src/windows/TabletDisplay.Host/VideoWire.cs" Link="VideoWire.cs" />
+  </ItemGroup>
+  <PropertyGroup>
+    <HelperArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64'">ARM64</HelperArchitecture>
+    <HelperArchitecture Condition="'$(HelperArchitecture)' == ''">x64</HelperArchitecture>
+    <HelperPath>../../src/windows/VideoPatternEncoder/out/$(HelperArchitecture)/LocalShare.PatternEncoder.exe</HelperPath>
+  </PropertyGroup>
+  <!-- The real pattern encoder, when built, lets VideoSession run end to end against a synthetic tablet. -->
+  <ItemGroup>
+    <None Include="$(HelperPath)" Condition="Exists('$(HelperPath)')" Link="LocalShare.PatternEncoder.exe" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

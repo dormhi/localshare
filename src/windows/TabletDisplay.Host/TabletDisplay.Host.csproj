@@ -14,6 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="../VideoPatternEncoder/out/$(Platform)/LocalShare.PatternEncoder.exe"
+          Condition="Exists('../VideoPatternEncoder/out/$(Platform)/LocalShare.PatternEncoder.exe')"
+          Link="LocalShare.PatternEncoder.exe" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
   </ItemGroup>
 </Project>

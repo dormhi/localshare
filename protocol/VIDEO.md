@@ -4,7 +4,7 @@ Status: implementation draft, 2026-09-30. Windows encoder, actual MediaCodec ren
 
 ## Channels and ownership
 
-Keep the Phase 3 control endpoint/protocol intact. After a valid control handshake, Android starts `localabstract:com.dormhi.localshare.video`. The host creates a second `adb forward tcp:localhost:0` mapping and connects to `127.0.0.1`; video authenticates with the same session's random 32-byte token, never placed in arguments/logs. Stop control, control timeout, activity destruction or surface loss closes the video endpoint. Host video failure stops the combined session. Remove each exact forwarding port, never all ADB forwards. There is still one tablet session, with two channels rather than simultaneous tablet support.
+Keep the Phase 3 control endpoint/protocol intact. After a valid control handshake, Android starts `localabstract:com.dormhi.localshare.video`. The host creates a second `adb forward tcp:0` mapping, verifies it is bound to loopback only, and connects to `127.0.0.1`; video authenticates with the same session's random 32-byte token, never placed in arguments/logs. Stop control, control timeout, activity destruction or surface loss closes the video endpoint. Host video failure stops the combined session. Remove each exact forwarding port, never all ADB forwards. There is still one tablet session, with two channels rather than simultaneous tablet support.
 
 This remains a debug APK experiment using the existing `run-as` bootstrap. No `INTERNET` permission, Wi-Fi debugging, new service or Google Play dependency. The same authorized-host/root/app-UID trust limitations as the control protocol apply. An unauthenticated local client gets a bounded handshake and cannot configure a decoder.
 

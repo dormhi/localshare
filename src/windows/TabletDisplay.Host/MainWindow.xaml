@@ -6,8 +6,19 @@
     <Grid Padding="32">
         <StackPanel Spacing="12" VerticalAlignment="Center" MaxWidth="560">
             <TextBlock Text="Tablet Display" Style="{StaticResource TitleTextBlockStyle}" />
-            <TextBlock Text="Foundation shell" Style="{StaticResource SubtitleTextBlockStyle}" />
-            <TextBlock Text="No tablet is connected. USB transport and virtual display support will be added in later phases."
+            <TextBlock Text="USB connection and virtual display proof" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <TextBlock x:Name="ConnectionStatus" Text="Connect one tablet over USB. USB debugging must be enabled and authorized."
+                       TextWrapping="Wrap" />
+            <CheckBox x:Name="TestPatternOption" Content="Stream generated test pattern" IsChecked="False" />
+            <NumberBox x:Name="StreamFpsLimit" Header="Stream FPS limit" Value="30" Minimum="1" Maximum="1000" SmallChange="1" LargeChange="15" SpinButtonPlacementMode="Inline" />
+            <TextBlock x:Name="VideoStatus" Text="30 is the test default. Lower limits can save power; 120/144 FPS require encoder and decoder support. Panel Hz is separate." TextWrapping="Wrap" />
+            <CheckBox x:Name="VirtualDisplayOption" Content="Enable virtual display (requires the test driver)" IsChecked="False" />
+            <TextBlock Text="The driver proof creates a Windows monitor. Test-pattern video is independent; real desktop streaming comes later. Leave both options off for USB-only tests." TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button x:Name="ConnectButton" Content="Connect tablet" Click="ConnectButton_Click" />
+                <Button x:Name="DisconnectButton" Content="Disconnect" IsEnabled="False" Click="DisconnectButton_Click" />
+            </StackPanel>
+            <TextBlock Text="The host uses Android Platform-Tools from PATH. Revoke this computer in the tablet's USB debugging settings to remove ADB authorization."
                        TextWrapping="Wrap" />
         </StackPanel>
     </Grid>

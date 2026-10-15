@@ -6,7 +6,7 @@ Phase 3 carries control bytes only. It does not send desktop frames or user cont
 
 ## Transport and trust boundary
 
-- Windows runs Android Platform-Tools from `PATH`, requires exactly one authorized ADB device, and creates `adb forward tcp:localhost:0 localabstract:com.dormhi.localshare.session`. Naming `localhost` explicitly keeps the temporary host port on loopback even if the ADB server was started with `-a`.
+- Windows runs Android Platform-Tools from `PATH`, requires exactly one authorized ADB device, and creates `adb forward tcp:0 localabstract:com.dormhi.localshare.session`. It then checks the operating system's TCP listener table: every listener on the returned port must be a loopback address. If the ADB server was started with `-a` (all interfaces), the forward is removed before any token is sent and the user is asked to restart ADB without it.
 - The host connects only to `127.0.0.1` at the ephemeral forwarded port. Android listens with `LocalServerSocket` in the abstract namespace; the manifest requests no network permission and no general TCP listener is created.
 - A random 32-byte session token is passed on `adb shell run-as` standard input into app-private storage, then read and deleted by the app. It is not placed in process arguments or an exported activity intent. This bootstrap requires a debuggable development APK; production credential provisioning is outside Phase 3.
 - The token rejects accidental or stale local clients. It does not defend against a compromised ADB-authorized host, a rooted tablet, or other code running under the app's UID.
@@ -34,4 +34,6 @@ ADB keys remain in the user's Platform-Tools profile and are never copied into t
 
 ## ADB source note
 
-Checked 2026-09-25 against the Android Open Source Project's [`socket_spec.cpp`](https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/socket_spec.cpp): ADB's TCP listener uses its loopback bind path when the host is `localhost`; an omitted host can use the all-interfaces path when the ADB server's `-a` flag is active. Therefore the host uses `tcp:localhost:0`, not the ambiguous `tcp:0` form.
+Checked 2026-09-25 against the Android Open Source Project's [`socket_spec.cpp`](https://android.googlesource.com/platform/packages/modules/adb/+/refs/heads/main/socket_spec.cpp): ADB's TCP listener uses its loopback bind path when the host is `localhost`; an omitted host can use the all-interfaces path when the ADB server's `-a` flag is active. The original design therefore used `tcp:localhost:0`.
+
+**Superseded 2026-10-15 by a physical test:** Platform-Tools 37.0.1 on Windows 11 rejects both `tcp:localhost:0` and `tcp:127.0.0.1:0` with "Invalid source port"; only `tcp:0` is accepted, and a default ADB server bound it to `127.0.0.1`. Because the explicit-host form is unavailable, the host now verifies the bind address after creating the forward (see above) instead of relying on the source spec. The same session also showed that `adb shell` joins arguments with spaces for the device shell, so the token redirection is passed quoted (`sh -c 'cat > files/session_token'`) to run inside `run-as`.

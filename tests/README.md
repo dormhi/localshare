@@ -12,3 +12,9 @@ They test mode enumeration, control bounds and ownership/expiry, plus host lease
 ## Phase 5 executable protocol tests
 
 Run `./src/android/gradlew --offline --no-daemon -p src/android :app:videoProtocolTest` with the documented Java/Android SDK environment, and `dotnet run --project tests/VideoProtocol/VideoProtocol.csproj`. Both use real protocol implementations with synthetic inputs and no physical device/network service. The native test runner additionally checks the NV12 generated pattern. Android `:app:assembleDebug :app:lintDebug` and merged-APK permission review remain required before Android commits. See [the video protocol](../protocol/VIDEO.md) for exact bounds; Windows encoder/rendering tests remain pending.
+
+## Windows executable adapter tests
+
+Run `dotnet run --project tests/HostAdbSession/HostAdbSession.csproj`. This invokes a synthetic child-process ADB and a local loopback mock tablet through the actual adapter implementation. It covers device selection, provisioning failures, fragmented/malformed hello, heartbeat failure, cable loss and exact owned-forward cleanup; it never contacts a real ADB daemon or tablet. It does not prove USB behavior.
+
+On Windows 11, `dotnet run --project tests/HostDriverControl/HostDriverControl.csproj -- --probe-missing-driver` performs real SetupAPI enumeration and expects the project driver to be absent. It must be run before installing the driver and exercises no IOCTL. For native portable tests in a Visual Studio developer shell, use `python tools/test-driver-core.py --compiler cl.exe --sanitize`; MSVC enables AddressSanitizer only, with no UndefinedBehaviorSanitizer. See the [Windows checkpoint](../docs/testing/phase-2-5-windows-report.md).
