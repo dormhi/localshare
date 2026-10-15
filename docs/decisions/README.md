@@ -12,6 +12,8 @@ Store accepted product and technical decisions here. Create one Markdown record 
 
 - [ADR-005: Bounded video and selectable FPS](ADR-005-bounded-video-and-fps.md) — generated-pattern proof, OS codecs and low/high FPS limits.
 
+- [ADR-006: Public driver signing](ADR-006-public-driver-signing.md) — proposed free SignPath Foundation route for public installs, EV/attestation as fallback; owner decision pending.
+
 Phase 4 working notes: [driver design](phase-4-driver-design.md) records the approved virtual modes and remaining Windows dependencies.
 
 For current test status and the Windows step sequence, see [project status](../project-status.md) and the [Phase 3 Windows checklist](../testing/phase-3-windows-checklist.md).
