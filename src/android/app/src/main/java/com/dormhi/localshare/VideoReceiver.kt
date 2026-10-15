@@ -3,6 +3,7 @@ package com.dormhi.localshare
 
 import android.net.LocalServerSocket
 import android.net.LocalSocket
+import android.net.LocalSocketAddress
 import android.view.Surface
 import java.io.Closeable
 import java.io.IOException
@@ -23,7 +24,7 @@ internal class VideoReceiver(
     private fun read(socket: LocalSocket) = VideoProtocol.read(socket.inputStream, { socket.soTimeout = it })
     private fun serve() {
         try {
-            val server = LocalServerSocket("com.dormhi.localshare.video")
+            val server = LocalServerSocket(VIDEO_SOCKET)
             listener = server
             if (stopped.get()) return
             while (!stopped.get()) {
@@ -94,5 +95,20 @@ internal class VideoReceiver(
     override fun close() {
         if (!stopped.compareAndSet(false, true)) return
         runCatching { client?.close() }; runCatching { listener?.close() }
+        // close() does not wake a thread blocked in accept(), which would keep the name bound.
+        wakeAbstractListener(VIDEO_SOCKET)
+    }
+    private companion object { const val VIDEO_SOCKET = "com.dormhi.localshare.video" }
+}
+
+/**
+ * LocalServerSocket.close() does not wake a thread blocked in accept(), so the abstract name stays
+ * bound until a client arrives. Connecting once wakes that thread; it sees its stop flag, closes the
+ * connection and releases the name. Call this only after the stop flag is set and before any new
+ * listener with the same name is created.
+ */
+internal fun wakeAbstractListener(name: String) {
+    runCatching {
+        LocalSocket().use { it.connect(LocalSocketAddress(name, LocalSocketAddress.Namespace.ABSTRACT)) }
     }
 }

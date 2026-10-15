@@ -165,9 +165,11 @@ class MainActivity : ComponentActivity() {
                         runCatching { client.close() }
                         break
                     }
+                    var sessionStarted = false
                     try {
                         client.soTimeout = 5_000
                         if (performHandshake(client, expectedToken)) {
+                            sessionStarted = true
                             runOnUiThread { if (endpointStop === stop && !stop.get()) status = "Connected to Windows host" }
                             val video = VideoReceiver(expectedToken.copyOf(), { videoSurface }, { reportedPanelRates }) { message ->
                                 runOnUiThread { if (endpointStop === stop && !stop.get()) status = message }
@@ -209,8 +211,13 @@ class MainActivity : ComponentActivity() {
                         synchronized(this) {
                             if (activeClient === client) activeClient = null
                         }
-                        if (!stop.get()) runOnUiThread { if (endpointStop === stop) status = "Waiting for the Windows host" }
+                        if (!stop.get()) runOnUiThread {
+                            if (endpointStop === stop) status = if (sessionStarted) "Disconnected; connect again from Windows" else "Waiting for the Windows host"
+                        }
                     }
+                    // A session token is single-use: once a session ends (stop, cable loss, timeout),
+                    // close this endpoint so a later host attempt can only use a freshly provisioned token.
+                    if (sessionStarted) break
                 }
             } finally {
                 runCatching { listener.close() }
@@ -249,6 +256,9 @@ class MainActivity : ComponentActivity() {
         }
         runCatching { resources.first?.close() }
         runCatching { resources.second?.close() }
+        // A thread blocked in accept() keeps the name bound after close(); wake it before a new
+        // endpoint binds the same name.
+        if (resources.second != null) wakeAbstractListener(SOCKET_NAME)
         resources.third?.let { thread ->
             if (thread !== Thread.currentThread()) runCatching { thread.join(1_000) }
         }
